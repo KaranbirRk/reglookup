@@ -40,6 +40,55 @@ Each lookup is dominated by VicRoads/Repco network and page time (often **severa
 8. **CORS**: optional `CORS_ORIGIN` (comma-separated) if a browser calls the API directly.
 9. **Frontend**: the Vite app in `frontend/` is **not** in the Docker image; your production software should call Railway over HTTPS from the server.
 
+## Railway CLI (this repo)
+
+The dev dependency **`@railway/cli`** is pinned so everyone uses the same CLI via `npx` / npm scripts (no global install required).
+
+| Script | What it does |
+|--------|----------------|
+| `npm run railway:login` | Browser login to Railway (once per machine). |
+| `npm run railway:whoami` | Show the logged-in account. |
+| `npm run railway:init` | **New** Railway project from this directory (interactive). |
+| `npm run railway:link` | Link this directory to an **existing** project (writes local `.railway/`, gitignored). |
+| `npm run railway:unlink` | Remove the local link. |
+| `npm run railway:up` | **Deploy from your laptop**: upload sources, build with your **[railway.toml](railway.toml)** Dockerfile, stream logs. |
+| `npm run railway:logs` | Tail deployment / runtime logs. |
+| `npm run railway:open` | Open the project in the browser. |
+| `npm run railway:status` | Show linked project / service info. |
+| `npm run railway:vars` | Manage variables (pass subcommands, e.g. `npm run railway:vars -- list`). |
+| `npm run railway:shell` | Subshell with Railway-injected env vars. |
+| `npm run railway:run` | Run a one-off command with Railway env injected (e.g. `npm run railway:run -- node dist/server.js`). |
+
+**One-shot (local machine, interactive)**
+
+From the repo root:
+
+```bash
+npm run railway:first-deploy
+```
+
+This runs `npm install`, `railway login`, `railway init -n reglookup` (skipped if `.railway/` already exists), then `railway up`.
+
+**Typical first-time flow (manual steps)**
+
+1. `npm install`
+2. `npm run railway:login`
+3. Either `npm run railway:init` (create project) **or** create the project in the Railway UI, then `npm run railway:link`.
+4. In the Railway dashboard: set **RAM ≥ 2 GB** on the API service, confirm **Dockerfile** build (already implied by `railway.toml`).
+5. Set secrets as needed, for example:  
+   `npx railway variable set LOOKUP_API_KEY=your-secret`  
+   Use `-s <service-name>` if the CLI asks which service (API vs worker).
+6. `npm run railway:up` to deploy from local files, **or** connect **GitHub** in Railway and push to `main` for automatic deploys (no `up` required).
+
+**GitHub vs `railway up`**
+
+- **GitHub integration**: pushes trigger builds; no CLI deploy step.
+- **`railway up`**: useful for quick iterations without pushing, or when not using Git deploy.
+
+**Bull worker (optional)**
+
+If you use `REDIS_URL`, add a **second service** in the same project (e.g. `railway add` or the UI), same image/repo, start command **`npm run worker`**, and set `REDIS_URL` on **both** API and worker.
+
 ## How to verify the API
 
 1. **Health (fast, no browser):** with the API running on port 3000, run `curl -sS http://127.0.0.1:3000/health | jq` (or without `jq` to see raw JSON). You should see `"ok": true` and backlog fields.
@@ -86,6 +135,7 @@ docker compose up --build
 - `npm run build` — compile TypeScript to `dist/`
 - `npm start` — run `dist/server.js`
 - `npm run worker` — run BullMQ workers (`dist/worker.js`) when using `REDIS_URL`
+- `npm run railway:*` — Railway CLI wrappers (see **Railway CLI** above)
 
 ## Environment variables
 

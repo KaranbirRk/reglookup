@@ -9,7 +9,21 @@
     "worker": "node dist/worker.js",
     "dev": "tsx watch src/server.ts",
     "dev:worker": "tsx watch src/worker.ts",
-    "dev:web": "npm run dev --prefix frontend"
+    "dev:web": "npm run dev --prefix frontend",
+    "railway": "railway",
+    "railway:login": "railway login",
+    "railway:whoami": "railway whoami",
+    "railway:init": "railway init",
+    "railway:link": "railway link",
+    "railway:unlink": "railway unlink",
+    "railway:up": "railway up",
+    "railway:logs": "railway logs",
+    "railway:open": "railway open",
+    "railway:status": "railway status",
+    "railway:vars": "railway variable",
+    "railway:shell": "railway shell",
+    "railway:run": "railway run",
+    "railway:first-deploy": "bash scripts/railway-first-deploy.sh"
   },
   "engines": {
     "node": ">=20"
@@ -24,6 +38,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@railway/cli": "^4.40.0",
     "@types/node": "^22.13.5",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3"
