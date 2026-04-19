@@ -1,0 +1,27 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      HOST: "0.0.0.0"
+      REDIS_URL: "redis://redis:6379"
+      QUEUE_MAX_DEPTH: "100"
+      LOG_LEVEL: "info"
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    command: ["node", "dist/worker.js"]
+    environment:
+      REDIS_URL: "redis://redis:6379"
+      LOG_LEVEL: "info"
+    depends_on:
+      - redis

@@ -1,0 +1,8 @@
+# https://docs.railway.com/guides/config-as-code
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+# Start is also set by Dockerfile CMD; Railway injects PORT automatically.

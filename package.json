@@ -1,0 +1,31 @@
+{
+  "name": "reglookup",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "worker": "node dist/worker.js",
+    "dev": "tsx watch src/server.ts",
+    "dev:worker": "tsx watch src/worker.ts",
+    "dev:web": "npm run dev --prefix frontend"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "bullmq": "^5.34.10",
+    "fastify": "^5.2.1",
+    "ioredis": "^5.4.2",
+    "p-queue": "^8.1.0",
+    "puppeteer-core": "^24.2.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}
