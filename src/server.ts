@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { initQueueLayer } from "./lib/queue-dispatch.js";
 import { registerAuth } from "./plugins/auth.js";
+import { registerDashboardStatic } from "./plugins/dashboard-static.js";
 import { registerHealthRoutes } from "./routes/health.js";
 import { registerLookupCombinedRoutes } from "./routes/lookup-combined.js";
 import { registerRepcoRoutes } from "./routes/repco-search.js";
@@ -24,20 +25,13 @@ async function buildServer() {
 
   await registerAuth(app);
 
-  app.get("/", async () => ({
-    name: "reglookup",
-    note: "This service is the JSON API only. There is no web UI at /.",
-    health: "/health",
-    combinedLookup: { method: "POST", path: "/api/lookup-combined", body: { registrationNumber: "ABC123" } },
-    dashboard:
-      "Run the Vite app on your machine: cd frontend && npm install && npm run dev — then set API base URL to this host (and set CORS_ORIGIN on the API if needed).",
-  }));
-
   await registerHealthRoutes(app);
   await registerVehicleLookupRoutes(app);
   await registerRepcoRoutes(app);
   await registerLookupCombinedRoutes(app);
   await initQueueLayer();
+
+  await registerDashboardStatic(app);
 
   return app;
 }

@@ -38,7 +38,7 @@ Each lookup is dominated by VicRoads/Repco network and page time (often **severa
    - **With Redis**: set `REDIS_URL`, deploy **both** the web service (`npm start`) and a **worker** service (`npm run worker`) from the same image so BullMQ jobs are processed. Without workers, queued scrapes will never finish.
    - **Warmup with Redis**: `POST .../warmup` runs in the **API** process only; BullMQ scrapes run in **worker** processes with their own browsers. Rely on lazy launch on first job per worker, or run a warmup job per worker if you add that automation later.
 8. **CORS**: optional `CORS_ORIGIN` (comma-separated) if a browser calls the API directly.
-9. **Frontend**: the Vite app in `frontend/` is **not** in the Docker image; your production software should call Railway over HTTPS from the server.
+9. **Dashboard**: the Docker image builds `frontend/` and serves it at **`/`** (same origin as the API). Leave **API base URL** empty in the UI. **`LOOKUP_API_KEY`** only applies to **`/api/*`**; HTML and `/assets/*` stay public so the page can load.
 
 ## Railway CLI (this repo)
 
@@ -133,6 +133,7 @@ docker compose up --build
 
 ## Scripts
 
+- `npm run build:all` — build Vite dashboard, compile API, copy `frontend/dist` → `public/` (for local `npm start` with UI)
 - `npm run build` — compile TypeScript to `dist/`
 - `npm start` — run `dist/server.js`
 - `npm run worker` — run BullMQ workers (`dist/worker.js`) when using `REDIS_URL`

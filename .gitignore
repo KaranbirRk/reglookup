@@ -1,5 +1,6 @@
 node_modules/
 dist/
+public/
 # Local Railway project/service link (do not commit; each machine runs `npm run railway:link`)
 .railway/
 .env

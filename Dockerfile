@@ -6,6 +6,10 @@ RUN npm ci
 
 COPY tsconfig.json ./
 COPY src ./src
+
+COPY frontend ./frontend
+RUN cd frontend && npm ci && npm run build
+
 RUN npm run build && npm prune --omit=dev
 
 FROM node:20-bookworm-slim AS runner
@@ -45,6 +49,7 @@ WORKDIR /app
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/frontend/dist ./public
 
 EXPOSE 3000
 CMD ["node", "dist/server.js"]
