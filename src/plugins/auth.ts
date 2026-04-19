@@ -5,7 +5,8 @@ export async function registerAuth(app: FastifyInstance): Promise<void> {
   if (!key) return;
 
   app.addHook("onRequest", async (req, reply) => {
-    if (req.url === "/health" || req.url.startsWith("/health?")) return;
+    const path = req.url.split("?")[0] ?? "";
+    if (path === "/health" || path === "/") return;
     const auth = req.headers.authorization;
     if (auth !== `Bearer ${key}`) {
       return reply.code(401).send({ error: "Unauthorized" });
