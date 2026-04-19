@@ -1,0 +1,41 @@
+# Runs `npx railway up --ci` on GitHub Actions.
+# 1) Railway dashboard → Project → Settings → Tokens → create project token.
+# 2) GitHub → Settings → Secrets and variables → Actions → New repository secret: RAILWAY_TOKEN
+# 3) Optional: RAILWAY_PROJECT_ID, RAILWAY_SERVICE if the CLI cannot infer them.
+# Default: manual runs only (avoids a red main branch before RAILWAY_TOKEN exists).
+# After the secret is set, add:  push: { branches: [main] }  under `on:` for deploy-on-push.
+
+name: Deploy to Railway
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies (includes @railway/cli)
+        run: npm ci
+
+      - name: Railway CLI deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          RAILWAY_SERVICE: ${{ secrets.RAILWAY_SERVICE }}
+        run: |
+          if [ -z "${RAILWAY_TOKEN:-}" ]; then
+            echo "RAILWAY_TOKEN secret is not set. Add a project token under GitHub → Settings → Secrets → Actions."
+            exit 1
+          fi
+          set -e
+          ARGS=(--ci)
+          if [ -n "${RAILWAY_PROJECT_ID:-}" ]; then ARGS+=(-p "$RAILWAY_PROJECT_ID"); fi
+          if [ -n "${RAILWAY_SERVICE:-}" ]; then ARGS+=(-s "$RAILWAY_SERVICE"); fi
+          npx railway up "${ARGS[@]}"

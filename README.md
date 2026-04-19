@@ -82,8 +82,9 @@ This runs `npm install`, `railway login`, `railway init -n reglookup` (skipped i
 
 **GitHub vs `railway up`**
 
-- **GitHub integration**: pushes trigger builds; no CLI deploy step.
-- **`railway up`**: useful for quick iterations without pushing, or when not using Git deploy.
+- **GitHub integration (Railway UI)**: connect the repo in Railway’s dashboard; pushes build there (no local CLI).
+- **GitHub Actions + CLI**: [`.github/workflows/railway-deploy.yml`](.github/workflows/railway-deploy.yml) runs **`npx railway up --ci`**. Add Actions secret **`RAILWAY_TOKEN`** (Railway **project token**: Project → Settings → Tokens). Optionally **`RAILWAY_PROJECT_ID`** and **`RAILWAY_SERVICE`**. Then open **Actions → Deploy to Railway → Run workflow**. To deploy on every push to `main`, edit that workflow and add a `push` trigger under `on:` (see comment in the file).
+- **Local `railway up`**: useful for quick iterations without waiting for GitHub.
 
 **Bull worker (optional)**
 
