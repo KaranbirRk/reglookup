@@ -6,7 +6,7 @@ HTTP microservice that mirrors the Friday app’s VicRoads and Repco Puppeteer f
 
 | Method | Path | Notes |
 |--------|------|--------|
-| GET | `/health` | Liveness and queue backlog (no response caching) |
+| GET | `/health` | Liveness, queue backlog, and `browsers.{vicroadsReady,repcoReady}` (warm sessions) |
 | POST | `/api/vehicle-lookup` | Body `{ "registrationNumber": "ABC123" }` |
 | POST | `/api/vehicle-lookup/warmup` | VicRoads `warmupBrowser()` |
 | POST | `/api/vehicle-lookup/cleanup` | VicRoads `closeBrowser()` |
@@ -23,7 +23,11 @@ Many **different** plates in parallel are fine up to queue limits; each **VicRoa
 
 ### Latency
 
-Each lookup is dominated by VicRoads/Repco network and page time (often **several seconds**). Optional env tuning: `VICROADS_NAV_TIMEOUT_MS`, `VICROADS_INPUT_WAIT_MS`, `VICROADS_RESULT_WAIT_MS`, `REPCO_RESULT_WAIT_MS` (see `.env.example`).
+Each lookup is dominated by VicRoads/Repco network and page time (often **several seconds**; **10–25s** combined on a cold container is common). The API starts **background browser warmup** after it listens (`WARMUP_ON_START=true` by default) so the **first** user request is less likely to pay the full double cold-start. **`GET /health`** includes `browsers.vicroadsReady` and `browsers.repcoReady` when sessions exist.
+
+Deploy **close to Australia** (e.g. Railway regions in APAC) if you can — cross-region RTT to VicRoads/Repco adds noticeable delay.
+
+Optional env tuning: `VICROADS_NAV_TIMEOUT_MS`, `VICROADS_INPUT_WAIT_MS`, `VICROADS_RESULT_WAIT_MS`, `REPCO_RESULT_WAIT_MS` (see `.env.example`).
 
 ## Railway checklist
 

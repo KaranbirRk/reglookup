@@ -86,6 +86,17 @@ function setOut(s: OutState) {
       ])
     );
   }
+  if (s.ms !== null && s.ms >= 12_000 && st !== null && st >= 200 && st < 300) {
+    meta.append(
+      el("span", { class: "hint-inline" }, [
+        "Live scrapes are slow; first hits after deploy or far-from-AU hosting can take this long. ",
+        el("code", {}, ["/health"]),
+        " shows ",
+        el("code", {}, ["browsers"]),
+        " when warmups finished.",
+      ])
+    );
+  }
   pre.textContent = s.body;
 }
 

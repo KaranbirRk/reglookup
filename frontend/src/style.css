@@ -230,6 +230,19 @@ button.primary:hover:not(:disabled) {
   font-weight: 500;
 }
 
+.output-meta .hint-inline {
+  flex-basis: 100%;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+  max-width: 58ch;
+}
+
+.output-meta .hint-inline code {
+  font-size: 0.95em;
+}
+
 .status-2xx {
   color: var(--good);
 }

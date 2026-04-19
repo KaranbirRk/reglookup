@@ -255,6 +255,15 @@ export async function warmupRepcoBrowser(): Promise<void> {
   }
 }
 
+/** True when Repco tab is connected with VIC flow available (after warmup). */
+export function isRepcoSessionReady(): boolean {
+  try {
+    return Boolean(globalRepcoBrowser.repcoBrowser?.connected && globalRepcoBrowser.repcoPage);
+  } catch {
+    return false;
+  }
+}
+
 export async function closeRepcoBrowser(): Promise<void> {
   if (globalRepcoBrowser.repcoBrowser) {
     try {
@@ -311,15 +320,7 @@ async function ensureRepcoVicAndRegoInput(page: Page): Promise<void> {
 }
 
 export async function scrapeRepcoData(registrationNumber: string): Promise<RepcoData> {
-  if (globalRepcoBrowser.repcoWarmupInProgress) {
-    console.log("⏳ Waiting for Repco browser warmup to complete...");
-    await globalRepcoBrowser.repcoWarmupInProgress;
-  }
-
-  if (!globalRepcoBrowser.repcoBrowser || !globalRepcoBrowser.repcoPage) {
-    console.log("⚠️ Repco browser not ready, warming up now...");
-    await warmupRepcoBrowser();
-  }
+  await warmupRepcoBrowser();
 
   if (!globalRepcoBrowser.repcoPage || !globalRepcoBrowser.repcoBrowser?.connected) {
     throw new Error(

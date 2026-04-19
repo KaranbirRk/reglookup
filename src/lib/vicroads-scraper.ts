@@ -143,6 +143,15 @@ export async function warmupBrowser(): Promise<void> {
   }
 }
 
+/** True when a VicRoads tab is connected (after warmup or first scrape). */
+export function isVicRoadsSessionReady(): boolean {
+  try {
+    return Boolean(globalBrowser.cachedBrowser?.connected && globalBrowser.cachedPage);
+  } catch {
+    return false;
+  }
+}
+
 export async function closeBrowser(): Promise<void> {
   if (globalBrowser.cachedBrowser) {
     try {
@@ -180,10 +189,7 @@ export async function scrapeVicRoadsData(registrationNumber: string): Promise<Ve
   try {
     console.log(`🚀 Starting VicRoads lookup for registration: ${registrationNumber}`);
 
-    if (globalBrowser.warmupInProgress) {
-      console.log("⏳ Waiting for browser warmup to complete...");
-      await globalBrowser.warmupInProgress;
-    }
+    await warmupBrowser();
 
     if (globalBrowser.cachedBrowser && globalBrowser.cachedPage) {
       console.log("⚡ Using pre-warmed browser session");
