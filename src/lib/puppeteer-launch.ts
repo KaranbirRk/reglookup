@@ -32,10 +32,16 @@ function resolveLocalChromePath(): string {
   );
 }
 
+const PROTOCOL_TIMEOUT_MS = Math.max(
+  60_000,
+  parseInt(process.env.PUPPETEER_PROTOCOL_TIMEOUT_MS ?? "480000", 10) || 480_000
+);
+
 export async function launchPuppeteerBrowser(): Promise<Browser> {
   return puppeteer.launch({
     headless: true,
     executablePath: resolveLocalChromePath(),
+    protocolTimeout: PROTOCOL_TIMEOUT_MS,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

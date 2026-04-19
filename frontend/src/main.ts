@@ -100,6 +100,8 @@ function setOut(s: OutState) {
   pre.textContent = s.body;
 }
 
+const LOOKUP_FETCH_TIMEOUT_MS = 180_000;
+
 async function runCombinedLookup(reg: string): Promise<void> {
   const url = `${apiBase() || ""}/api/lookup-combined`;
   state.busy++;
@@ -116,6 +118,7 @@ async function runCombinedLookup(reg: string): Promise<void> {
         ...authHeaders(),
       },
       body: JSON.stringify({ registrationNumber: reg }),
+      signal: AbortSignal.timeout(LOOKUP_FETCH_TIMEOUT_MS),
     });
     status = res.status;
     const text = await res.text();
@@ -127,10 +130,14 @@ async function runCombinedLookup(reg: string): Promise<void> {
     }
   } catch (e) {
     status = null;
-    bodyText =
-      e instanceof Error
-        ? `${e.name}: ${e.message}\n\nIf the API is on another host, set API base URL and CORS, or use the Vite proxy (local dev).`
-        : String(e);
+    if (e instanceof DOMException && e.name === "TimeoutError") {
+      bodyText = `Request aborted after ${LOOKUP_FETCH_TIMEOUT_MS / 1000}s (browser limit).\n\nThe Railway/proxy layer may have a shorter timeout than VicRoads+Repco need. Try again, or raise proxy timeouts.`;
+    } else {
+      bodyText =
+        e instanceof Error
+          ? `${e.name}: ${e.message}\n\nIf the API is on another host, set API base URL and CORS, or use the Vite proxy (local dev).`
+          : String(e);
+    }
   } finally {
     const ms = Math.round(performance.now() - t0);
     setLookupLoading(false);

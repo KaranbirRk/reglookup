@@ -27,7 +27,7 @@ Each lookup is dominated by VicRoads/Repco network and page time (often **severa
 
 Deploy **close to Australia** (e.g. Railway regions in APAC) if you can — cross-region RTT to VicRoads/Repco adds noticeable delay.
 
-Optional env tuning: `VICROADS_NAV_TIMEOUT_MS`, `VICROADS_INPUT_WAIT_MS`, `VICROADS_RESULT_WAIT_MS`, `REPCO_RESULT_WAIT_MS` (see `.env.example`).
+Optional env tuning: `VICROADS_NAV_TIMEOUT_MS`, `VICROADS_INPUT_WAIT_MS`, `VICROADS_RESULT_WAIT_MS`, `REPCO_RESULT_WAIT_MS`, `PUPPETEER_PROTOCOL_TIMEOUT_MS` (see `.env.example`). If Repco logs `Runtime.callFunctionOn timed out`, raise `PUPPETEER_PROTOCOL_TIMEOUT_MS` and ensure the **dashboard fetch** timeout (3m in `frontend`) is below your **proxy** limit if any.
 
 ## Railway checklist
 

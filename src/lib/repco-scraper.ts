@@ -264,6 +264,21 @@ export function isRepcoSessionReady(): boolean {
   }
 }
 
+/** Close Repco Chromium and clear globals after CDP/evaluate failures so the next lookup can re-warm. */
+export async function resetRepcoBrowserAfterFailure(reason: string): Promise<void> {
+  console.warn(`♻️ Resetting Repco browser after failure: ${reason.slice(0, 200)}`);
+  globalRepcoBrowser.repcoWarmupInProgress = null;
+  try {
+    if (globalRepcoBrowser.repcoBrowser?.connected) {
+      await globalRepcoBrowser.repcoBrowser.close().catch(() => {});
+    }
+  } catch {
+    /* ignore */
+  }
+  globalRepcoBrowser.repcoBrowser = null;
+  globalRepcoBrowser.repcoPage = null;
+}
+
 export async function closeRepcoBrowser(): Promise<void> {
   if (globalRepcoBrowser.repcoBrowser) {
     try {
@@ -355,18 +370,26 @@ export async function scrapeRepcoData(registrationNumber: string): Promise<Repco
 
     console.log("⏳ Waiting for vehicle result to appear...");
     try {
+      // Avoid document.body.innerText on every poll (huge Repco DOM → CDP timeouts).
       await page.waitForFunction(
         () => {
-          const btn = document.querySelector("#btn-9381");
-          const bodyText = document.body.innerText;
-          return (
-            btn ||
-            bodyText.includes("We found your vehicle") ||
-            bodyText.includes("Select your vehicle") ||
-            bodyText.includes("Engine:") ||
-            bodyText.includes("Year:") ||
+          if (document.querySelector("#btn-9381")) return true;
+          if (
             document.querySelector(".vehicle-name") ||
-            document.querySelector(".search-results-item")
+            document.querySelector(".search-results-item") ||
+            document.querySelector(".js-vehicle-name")
+          ) {
+            return true;
+          }
+          const root =
+            document.querySelector("main") ||
+            document.querySelector("#content") ||
+            document.querySelector('[role="main"]');
+          const t = (root?.textContent ?? "").slice(0, 5000);
+          return (
+            t.includes("We found your vehicle") ||
+            t.includes("Select your vehicle") ||
+            (t.includes("Engine:") && t.includes("Year:"))
           );
         },
         { timeout: REPCO_RESULT_MARKER_MS }
@@ -382,7 +405,7 @@ export async function scrapeRepcoData(registrationNumber: string): Promise<Repco
         return { source: "ID #btn-9381", text: specificBtn.textContent.trim() };
       }
 
-      const allText = document.body.innerText;
+      const allText = (document.body?.innerText ?? "").slice(0, 12000);
       const findIndex = allText.indexOf("We found your vehicle");
       if (findIndex !== -1) {
         const afterText = allText.substring(findIndex + 21, findIndex + 300).trim();
@@ -424,6 +447,7 @@ export async function scrapeRepcoData(registrationNumber: string): Promise<Repco
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     console.error(`❌ Repco scraping error: ${errorMsg}`);
+    await resetRepcoBrowserAfterFailure(errorMsg);
     return {
       registrationNumber: registrationNumber.toUpperCase(),
       error: errorMsg,

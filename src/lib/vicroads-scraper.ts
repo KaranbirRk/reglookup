@@ -387,7 +387,8 @@ export async function scrapeVicRoadsData(registrationNumber: string): Promise<Ve
       vehicleData.transferDispute = extractedData.data.transferDispute;
 
     console.log(`🔍 Found ${extractedData.panelsFound} VicRoads panels`);
-    console.log("📄 Page content preview:", extractedData.allText);
+    const preview = (extractedData.allText ?? "").slice(0, 240);
+    if (preview) console.log("📄 Page content preview (truncated):", preview);
 
     const pageText = extractedData.allText.toLowerCase();
     if (
